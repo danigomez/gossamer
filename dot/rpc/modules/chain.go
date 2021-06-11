@@ -133,6 +133,11 @@ func (cm *ChainModule) GetHead(r *http.Request, req *ChainBlockNumberRequest, re
 	return cm.GetBlockHash(r, req, res)
 }
 
+// GetFinalisedHead alias for GetFinalizedHead
+func (cm *ChainModule) GetFinalisedHead(r *http.Request, req *EmptyRequest, res *ChainHashResponse) error {
+	return cm.GetFinalizedHead(r, req, res)
+}
+
 // GetFinalizedHead returns the most recently finalised block hash
 func (cm *ChainModule) GetFinalizedHead(r *http.Request, req *EmptyRequest, res *ChainHashResponse) error {
 	h, err := cm.blockAPI.GetFinalizedHash(0, 0)
