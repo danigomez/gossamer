@@ -38,6 +38,7 @@ type HTTPServer struct {
 	rpcServer    *rpc.Server // Actual RPC call handler
 	serverConfig *HTTPServerConfig
 	wsConns      []*subscription.WSConn
+	srvcRefs     map[string]interface{}
 }
 
 // HTTPServerConfig configures the HTTPServer
@@ -74,6 +75,7 @@ func NewHTTPServer(cfg *HTTPServerConfig) *HTTPServer {
 		logger:       logger,
 		rpcServer:    rpc.NewServer(),
 		serverConfig: cfg,
+		srvcRefs:     make(map[string]interface{}),
 	}
 
 	server.RegisterModules(cfg.Modules)
@@ -91,6 +93,8 @@ func (h *HTTPServer) RegisterModules(mods []string) {
 		h.logger.Debug("Enabling rpc module", "module", mod)
 		var srvc interface{}
 		switch mod {
+		case "account":
+			srvc = modules.NewAccountModule(h.srvcRefs["system"])
 		case "system":
 			srvc = modules.NewSystemModule(h.serverConfig.NetworkAPI, h.serverConfig.SystemAPI,
 				h.serverConfig.CoreAPI, h.serverConfig.StorageAPI, h.serverConfig.TransactionQueueAPI)
@@ -118,6 +122,7 @@ func (h *HTTPServer) RegisterModules(mods []string) {
 		}
 
 		h.serverConfig.RPCAPI.BuildMethodNames(srvc, mod)
+		h.srvcRefs[mod] = srvc
 	}
 }
 
